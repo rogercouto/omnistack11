@@ -24,7 +24,9 @@ export default function Logon(){
         e.preventDefault();
         try {
             const response = await api.post('session', {email, password});
-            const ongstr = JSON.stringify(response.data)
+            const ong = response.data.ong;
+            ong.token = response.data.token;
+            const ongstr = JSON.stringify(ong);
             localStorage.setItem('ong', ongstr);
             history.push('/profile');
         } catch (err) {

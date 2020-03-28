@@ -24,9 +24,10 @@ export default function NewIncident(){
         e.preventDefault();
         const incident = {title, description, value};
         try {
+            const bearerToken = 'Bearer '+ong.token;
             await api.post('incidents', incident, {
                 headers:{
-                    Authorization: ong.id
+                    Authorization: bearerToken
                 }
             });
             history.push('/profile');

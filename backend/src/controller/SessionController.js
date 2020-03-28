@@ -1,5 +1,6 @@
 const connection = require('../database/connection');
-const { validatePassword } = require('../util/cAuth');
+const jwt = require('jsonwebtoken');
+const { validatePassword, generateToken } = require('../util/cAuth');
 
 module.exports = {
 
@@ -16,9 +17,13 @@ module.exports = {
         if (!validatePassword(password, ong.password)){
             return response.status(400).json({ error: 'Password don\'t match.' });
         }
-        const copy = Object.assign({}, ong);
-        delete copy.password;
-        return response.json(copy);
+       delete ong.password;
+       const token = generateToken(ong);
+        response.json({
+            auth: true,
+            ong: ong,
+            token
+        })
     },
 
 };

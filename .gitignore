@@ -104,6 +104,10 @@ dist/
 # DynamoDB Local files
 .dynamodb/
 
+##Database
+/backend/src/database/db.sqlite
+
+
 # Temporary folders
 tmp/
 temp/

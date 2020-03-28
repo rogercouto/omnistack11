@@ -24,73 +24,48 @@ module.exports = {
         if (exists){
             return response.status(400).json({ error: 'ONG with this email already exists.' });
         }
-        
         const encryptedPassword = encryptPassword(password);
         const confirmed = true; 
         const id = generateUniqueId();
         await connection('ongs').insert({
             id, name, email, password: encryptedPassword, phone, city, uf, confirmed
         });
-        return response.json({ id });
+        return response.status(204).send();
     },
 
     async update(request, response){
-        const id = request.headers.authorization;
-        if (!id){
-            return response.status(400).json({ error: 'Not authorized.' });
-        }
         const { name, phone, city, uf} = request.body;
-        const ong = await connection('ongs')
-            .where('id', id)
-            .first();
-        if (!ong){
-            return response.status(404).json({ error: 'Ong not exists.' });
-        }
-        await connection('ongs').where('id',id).update({
+        await connection('ongs').where('id',request.ong_id).update({
             name, phone, city, uf
         });
         return response.status(204).send();
     },
 
     async delete(request, response){
-        const id = request.headers.authorization;
-        if (!id){
-            return response.status(400).json({ error: 'Not authorized.' });
-        }
         const { password } = request.body;
         const ong = await connection('ongs')
-            .where('id', id)
+            .where('id', request.ong_id)
             .first();
-        if (!ong){
-            return response.status(404).json({ error: 'Ong not exists.' });
-        }
         if (!validatePassword(password, ong.password)){
             return response.status(400).json({ error: 'Password not match.' });
         }
-        await connection('incidents').where('ong_id', id).delete();
-        await connection('ongs').where('id', id).delete();
+        await connection('incidents').where('ong_id', request.ong_id).delete();
+        await connection('ongs').where('id', request.ong_id).delete();
         return response.status(204).send();
     },
 
     async changePassword(request, response){
-        const id = request.headers.authorization;
-        if (!id){
-            return response.status(400).json({ error: 'Not authorized.' });
-        }
-        const { password, newPassword} = request.body;
         const ong = await connection('ongs')
-            .where('id', id)
+            .where('id', request.ong_id)
             .first();
-        if (!ong){
-            return response.status(400).json({ error: 'Worng authorization.' });
-        }
+        const { password, newPassword} = request.body;
         if (!validatePassword(password, ong.password)){
-            return response.status(400).json({ error: 'Current password not match.' });
+            return response.status(401).json({ error: 'Current password not match.' });
         }
         const encryptedNewpassword = encryptPassword(newPassword);
         await connection('ongs').update({
             password: encryptedNewpassword
-        }).where('id', id);
+        }).where('id', request.ong_id);
         return response.status(204).send();
     }
 

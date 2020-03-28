@@ -22,17 +22,19 @@ export default function Profile(){
     const [incidents, setIncidents] = useState([]);
 
     async function loadIncidents(){
-        if (!loading && (total == 0 || incidents.length < total)){
+        if (!loading && (total === 0 || incidents.length < total)){
             setLoading(true);
+            const bearerToken = 'Bearer '+ong.token;
+            console.log(bearerToken);
             const response = await api
                 .get('profile',{
-                    headers:{Authorization: ong.id},
+                    headers:{Authorization: bearerToken},
                     params:{ page }
                 });
-            if (total == 0){
+            if (total === 0){
                 setTotal(response.headers['x-total-count']);
             }
-            setIncidents([... incidents, ...response.data ]);
+            setIncidents([... incidents,...response.data ]);
             setPage(page+1);
             setLoading(false);
         }
@@ -44,12 +46,14 @@ export default function Profile(){
 
     async function handleDeleteIncident(id){
         try {
+            const bearerToken = 'Bearer '+ong.token;
             await api.delete(`incidents/${id}`, {
                 headers:{
-                    Authorization: ong.id,
+                    Authorization: bearerToken,
                 }
             });
             setIncidents(incidents.filter(incident => incident.id !== id)); 
+            setTotal(total-1);
         } catch (err) {
             alert('Erro ao deletar caso, tente novamente.');
         }
@@ -94,8 +98,12 @@ export default function Profile(){
                 ))}                
             </ul>
             {
-                (incidents.length < total) &&
-                <div className="load-more"><a onClick={handleIncPage}>Carregar mais</a></div>
+                (total > 0 && incidents.length < total) &&
+                    <div className="load-more"><a onClick={handleIncPage}>Carregar mais</a></div>
+            }
+            {
+                (total == 0) &&
+                <div className="no-more"><span>Nenhum caso</span></div>
             }
         </div>
     );

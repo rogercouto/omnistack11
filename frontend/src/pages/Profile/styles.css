@@ -86,6 +86,24 @@
     font-size: 18px;
 }
 
+.no-more{
+    margin-top: 10px;
+    padding: 15px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-more span{
+    color: #777;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: filter 0.2s;
+}
+
 .load-more{
     margin-top: 10px;
     padding: 15px;
@@ -107,3 +125,4 @@
 .load-more a:hover{
     filter: brightness(200%);
 }
+

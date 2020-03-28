@@ -47,30 +47,24 @@ module.exports = {
 
     async create(request, response){
         const { title, description, value } = request.body;
-        const ong_id = request.headers.authorization;
-        const check = await connection('ongs').where('id', ong_id).first();
-        if (!check){
-            return response.status(400).json({ error: 'Invalid Authorization.' });
-        }
         const [id] = await connection('incidents').insert({
-            title, description, value, ong_id
+            title, description, value, ong_id : request.ong_id
         });
         return response.json({ id });
     },
 
     async update(request, response){
         const { id } = request.params;
-        const ong_id = request.headers.authorization;
         const { title, description, value } = request.body;
         const incident = await connection('incidents')
             .where('id', id)
             .select('ong_id')
             .first();
         if (incident == null){
-            return response.status(404).json({error: 'Incident with ID='+id+' not found.'});
+            return response.status(401).json({error: 'Incident with ID='+id+' not found.'});
         }
-        if (incident.ong_id != ong_id){
-            return response.status(401).json({error: 'Unnauthorized operation.'});
+        if (incident.ong_id != request.ong_id){
+            return response.status(401).json({error: 'Can\'t update incident from another ONG.'});
         }
         await connection('incidents').where('id', id).update(
             { title, description, value}
@@ -80,7 +74,6 @@ module.exports = {
 
     async delete(request, response){
         const { id } = request.params;
-        const ong_id = request.headers.authorization;
         const incident = await connection('incidents')
             .where('id', id)
             .select('ong_id')
@@ -88,8 +81,8 @@ module.exports = {
         if (incident == null){
             return response.status(404).json({error: 'Incident with ID='+id+' not found.'});
         }
-        if (incident.ong_id != ong_id){
-            return response.status(401).json({error: 'Unnauthorized operation.'});
+        if (incident.ong_id != request.ong_id){
+            return response.status(401).json({error: 'Can\'t delete incident from another ONG.'});
         }
         await connection('incidents').where('id', id).delete();
         return response.status(204).send();
